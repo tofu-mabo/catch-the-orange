@@ -14,9 +14,10 @@ export default function Page() {
   const [dropSpeed, setDropSpeed] = useState<number>(4); // 落下スピードの初期値
   const [spawnInterval, setSpawnInterval] = useState<number>(1000); // アイテム出現間隔（初期値1秒）
   const [canvasWidth, setCanvasWidth] = useState<number>(500); // 初期値500、useEffectで更新
-  const canvasHeight = 500;
+  const [canvasHeight, setCanvasHeight] = useState<number>(500); // 初期値500、useEffectで更新
   const playerWidth = 75; // 1.5倍に拡大
   const playerHeight = 75; // 1.5倍に拡大
+  const positionFromBottom = 200;
   const itemSize = 30;
   const bonusItemSize = 45; // orangesのサイズを1.5倍に変更
   const playerImage = useRef<HTMLImageElement | null>(null);
@@ -26,7 +27,11 @@ export default function Page() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setCanvasWidth(window.innerWidth);
-      const handleResize = () => setCanvasWidth(window.innerWidth);
+      setCanvasHeight(window.innerHeight);
+      const handleResize = () => {
+        setCanvasWidth(window.innerWidth);
+        setCanvasHeight(window.innerHeight);
+      };
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
@@ -79,10 +84,11 @@ export default function Page() {
         let missedCount = 0;
 
         newItems = newItems.filter((item) => {
+          const itemSizeToUse = item.bonus ? bonusItemSize : itemSize;
+          const playerY = canvasHeight - playerHeight - positionFromBottom;
           const caught =
-            item.y + (item.bonus ? bonusItemSize : itemSize) >=
-              canvasHeight - playerHeight &&
-            item.x >= playerX &&
+            item.y + itemSizeToUse >= playerY &&
+            item.x + itemSizeToUse >= playerX &&
             item.x <= playerX + playerWidth;
 
           if (caught) {
@@ -123,6 +129,12 @@ export default function Page() {
 
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+      // 体力ゲージの描画
+      ctx.fillStyle = "green";
+      ctx.fillRect(10, 10, (canvasWidth - 20) * (health / 100), 20);
+      ctx.strokeStyle = "black";
+      ctx.strokeRect(10, 10, canvasWidth - 20, 20);
+
       // 落ちてくるアイテムを描画
       items.forEach((item) => {
         if (item.bonus && bonusItemImage.current) {
@@ -149,43 +161,38 @@ export default function Page() {
         ctx.drawImage(
           playerImage.current,
           playerX,
-          canvasHeight - playerHeight,
+          canvasHeight - playerHeight - positionFromBottom,
           playerWidth,
           playerHeight
         );
       }
-
-      // 体力ゲージの描画
-      ctx.fillStyle = "green";
-      ctx.fillRect(10, 10, (canvasWidth - 20) * (health / 100), 20);
-      ctx.strokeStyle = "black";
-      ctx.strokeRect(10, 10, canvasWidth - 20, 20);
 
       animationFrameId = requestAnimationFrame(update);
     };
 
     animationFrameId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [playerX, items, health, gameOver, dropSpeed, canvasWidth]);
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    setPlayerX(e.touches[0].clientX - playerWidth / 2);
-  };
+  }, [playerX, items, health, gameOver, dropSpeed, canvasWidth, canvasHeight]);
 
   return (
     <div
       onMouseMove={(e) => setPlayerX(e.clientX - playerWidth / 2)}
-      onTouchMove={handleTouchMove}
-      style={{ textAlign: "center", padding: "20px" }}
+      onTouchMove={(e) => setPlayerX(e.touches[0].clientX - playerWidth / 2)}
+      style={{
+        textAlign: "center",
+        width: "100vw",
+        height: "100vh",
+        overflow: "hidden",
+      }}
     >
-      <h1>Get Ultra Orange!</h1>
-      <p>Score: {score} UO</p>
+      <h1>Catch Game</h1>
+      <p>Score: {score}</p>
       {gameOver ? <h2>Game Over</h2> : <p>Health: {health}</p>}
       <canvas
         ref={canvasRef}
         width={canvasWidth}
         height={canvasHeight}
-        style={{ border: "1px solid black", width: "100%" }}
+        style={{ border: "1px solid black", width: "100vw", height: "100vh" }}
       />
     </div>
   );
