@@ -27,10 +27,10 @@ export default function Page() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setCanvasWidth(window.innerWidth);
-      setCanvasHeight(window.innerHeight);
+      setCanvasHeight(window.innerHeight - 100);
       const handleResize = () => {
         setCanvasWidth(window.innerWidth);
-        setCanvasHeight(window.innerHeight);
+        setCanvasHeight(window.innerHeight - 100);
       };
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
@@ -180,19 +180,21 @@ export default function Page() {
       onTouchMove={(e) => setPlayerX(e.touches[0].clientX - playerWidth / 2)}
       style={{
         textAlign: "center",
-        width: "100vw",
-        height: "100vh",
+        width: "100dvw",
+        height: "90dvh",
         overflow: "hidden",
       }}
     >
-      <h1>Get Ultra Orange!</h1>
-      <p>Score: {score} UO</p>
-      {gameOver ? <h2>Game Over</h2> : <p>Health: {health}</p>}
+      <div style={{ padding: "10px" }}>
+        <h1>Get Ultra Orange!</h1>
+        <p>Score: {score} UO</p>
+        {gameOver ? <h2>Game Over</h2> : <p>Health: {health}</p>}
+      </div>
       <canvas
         ref={canvasRef}
         width={canvasWidth}
         height={canvasHeight}
-        style={{ border: "1px solid black", width: "100vw", height: "100vh" }}
+        style={{ border: "1px solid black", width: "100dvw", height: "90dvh" }}
       />
     </div>
   );
