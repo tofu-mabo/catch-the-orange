@@ -185,8 +185,8 @@ export default function Page() {
         overflow: "hidden",
       }}
     >
-      <h1>Catch Game</h1>
-      <p>Score: {score}</p>
+      <h1>Get Ultra Orange!</h1>
+      <p>Score: {score} UO</p>
       {gameOver ? <h2>Game Over</h2> : <p>Health: {health}</p>}
       <canvas
         ref={canvasRef}
